@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NestJS + Prisma Transaction Management — nestjs-cls Prisma Adapter</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:#faf8f3;color:#211d17;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;line-height:1.7;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{max-width:860px;margin:0 auto;padding:44px}
+@media(max-width:600px){.page{padding:24px}}
+@media print{body{background:#fff}.page{max-width:100%;padding:0}nav.contents{position:static;border-bottom:1px solid #e4dccb}}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#93391f;font-weight:600}
+h1.page-title{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:32px;line-height:1.25;margin:8px 0 8px}
+.lede{font-size:14px;max-width:62ch}
+.tags{margin-top:12px}
+.tags span{display:inline-block;font-size:12px;color:#93391f;border:1px solid #93391f;border-radius:999px;padding:1px 10px;margin:0 6px 6px 0}
+nav.contents{position:sticky;top:0;background:#faf8f3;border-top:1px solid #e4dccb;border-bottom:1px solid #e4dccb;padding:10px 0;z-index:10;margin:24px 0 0}
+nav.contents .label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#93391f;font-weight:700;margin-bottom:4px}
+nav.contents ol{list-style:none;display:flex;flex-wrap:wrap;gap:2px 18px}
+nav.contents ol li{font-size:13px}
+nav.contents a{color:#93391f;text-decoration:none}
+nav.contents a:hover{text-decoration:underline}
+section{padding:28px 0;border-bottom:1px solid #e4dccb}
+.sec-label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#93391f;font-weight:700;margin-bottom:4px}
+h2{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:19px;font-weight:650;margin:0 0 8px;line-height:1.4}
+p{margin:8px 0}
+.note{font-size:12.5px;color:#6b6257;margin:8px 0}
+a{color:#93391f}
+code.inline{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:#efe8d6;padding:1px 5px;border-radius:4px}
+ol.rows{list-style:none;margin:12px 0}
+ol.rows li{display:flex;gap:12px;padding:10px 0;border-top:1px solid #e4dccb}
+ol.rows li:last-child{border-bottom:1px solid #e4dccb}
+.num{flex:0 0 auto;width:26px;height:26px;border:1px solid #93391f;color:#93391f;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;margin-top:2px}
+.row-body{flex:1}
+.row-body strong{display:block;font-size:13.5px}
+.row-body div.t{font-size:13.5px}
+.group-label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6b6257;font-weight:700;margin:18px 0 0}
+ul.ruled{list-style:none;margin:0}
+ul.ruled li{padding:7px 0 7px 26px;position:relative;border-bottom:1px solid #e4dccb;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+ul.ruled li:first-child{border-top:1px solid #e4dccb}
+ul.ruled li::before{content:"–";position:absolute;left:6px;color:#93391f;font-weight:700}
+ul.ruled li.dir{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-weight:700}
+ul.ruled li.dir::before{content:"✓";color:#93391f}
+.seq{margin:16px 0;border-top:1px solid #e4dccb;border-bottom:1px solid #e4dccb}
+.seq-actors{display:flex;border-bottom:1px solid #e4dccb}
+.seq-actors div{flex:1;text-align:center;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:10px 4px;border-left:1px solid #e4dccb;color:#211d17}
+.seq-actors div:first-child{border-left:0}
+.seq-actors div small{display:block;font-weight:400;text-transform:none;letter-spacing:0;color:#6b6257;font-size:11px}
+.seq-steps{list-style:none}
+.seq-steps li{display:flex;gap:0;border-top:1px solid #e4dccb;font-size:13.5px}
+.seq-steps li:first-child{border-top:0}
+.seq-steps .from{flex:0 0 148px;padding:9px 10px 9px 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:#6b6257;text-align:right}
+.seq-steps .wire{flex:0 0 28px;position:relative;border-left:2px solid #93391f;margin-left:14px}
+.seq-steps .wire::before{content:"";position:absolute;top:16px;left:-6px;width:10px;height:10px;background:#faf8f3;border:2px solid #93391f;border-radius:50%}
+.seq-steps .what{flex:1;padding:9px 0 9px 12px}
+.seq-steps .what code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+.seq-steps .n{display:inline-block;min-width:20px;height:20px;border:1px solid #93391f;color:#93391f;border-radius:50%;font-size:11px;text-align:center;line-height:18px;margin-right:8px;font-weight:700}
+.alt{margin:12px 0;border:1px solid #e4dccb}
+.alt-h{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;padding:6px 12px;border-bottom:1px solid #e4dccb;background:#f3eee0}
+.alt-b{padding:8px 12px;font-size:13px}
+pre.code{background:#26211a;color:#f2e9d5;border-radius:6px;padding:16px 18px;overflow-x:auto;margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.65}
+pre.code code{color:inherit;background:none;padding:0}
+table.rules{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+table.rules th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6b6257;font-weight:700;text-align:left;padding:8px 8px 8px 0;border-bottom:1px solid #211d17}
+table.rules td{padding:9px 8px 9px 0;border-bottom:1px solid #e4dccb;vertical-align:top}
+table.rules td:first-child{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+.callout{border-top:2px solid #93391f;border-bottom:1px solid #e4dccb;padding:10px 0;margin:12px 0;font-size:12.5px}
+.callout strong{color:#93391f}
+footer{padding:20px 0 8px;font-size:12px;color:#6b6257}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="eyebrow">NestJS &bull; Prisma &bull; @nestjs-cls/transactional</div>
+<h1 class="page-title">Transaction Management via the nestjs-cls Prisma Adapter</h1>
+<p class="lede">No hand-rolled manager. The official <code class="inline">ClsPluginTransactional + TransactionalAdapterPrisma</code> owns <code class="inline">prisma.$transaction</code>, stores the tx client in CLS, and exposes it as <code class="inline">txHost.tx</code>. One decorator, full commit-or-rollback flow.</p>
+<div class="tags"><span>ClsPluginTransactional</span><span>TransactionalAdapterPrisma</span><span>TransactionHost.tx</span></div>
+
+<nav class="contents">
+<div class="label">Contents</div>
+<ol>
+<li><a href="#mental">1. Mental model</a></li>
+<li><a href="#sequence">2. Sequence</a></li>
+<li><a href="#flow">3. Request lifecycle</a></li>
+<li><a href="#setup">4. Install + plugin setup</a></li>
+<li><a href="#adapter">5. Adapter deep-dive</a></li>
+<li><a href="#uow">6. Unit of Work</a></li>
+<li><a href="#tx">7. @Transactional()</a></li>
+<li><a href="#repo">8. Repository</a></li>
+<li><a href="#structure">9. Folder structure</a></li>
+<li><a href="#mistakes">10. Mistakes &amp; practices</a></li>
+</ol>
+</nav>
+
+<section id="mental">
+<div class="sec-label">01 — Mental model</div>
+<h2>Adapter replaces the custom manager</h2>
+<p>Before: you wrote <code class="inline">TransactionManager + TX_CLIENT_KEY + interceptor</code> yourself. After: the plugin does exactly that — tested and nested-safe. Your code only touches two things: <code class="inline">@Transactional()</code> and <code class="inline">txHost.tx</code>.</p>
+<div class="group-label">Without / with adapter</div>
+<ul class="ruled">
+<li class="dir">Without — service injects PrismaService directly. Second write fails, first stays. Corrupt data.</li>
+<li class="dir">With adapter — @Transactional() on service method &rarr; plugin opens $transaction &rarr; every txHost.tx shares it &rarr; commit or rollback.</li>
+<li>User &rarr; controller (thin) &rarr; service @Transactional() &rarr; ClsPluginTransactional &rarr; TransactionalAdapterPrisma &rarr; CLS tx &rarr; repos via txHost.tx &rarr; Postgres</li>
+</ul>
+<p class="note">Rule stays: never inject <code class="inline">PrismaService</code> in services or repos. Inject <code class="inline">TransactionHost</code> and use <code class="inline">txHost.tx</code> — inside a transaction it is the tx client, outside it is the plain client.</p>
+</section>
+
+<section id="sequence">
+<div class="sec-label">02 — Sequence</div>
+<h2>End-to-end sequence: one POST /orders</h2>
+<div class="seq">
+<div class="seq-actors">
+<div>User<small>actor</small></div>
+<div>Controller<small>thin</small></div>
+<div>Service<small>@Transactional</small></div>
+<div>Plugin<small>CLS plugin</small></div>
+<div>Adapter<small>prisma</small></div>
+<div>DB<small>postgres</small></div>
+</div>
+<ol class="seq-steps">
+<li><span class="from">User &rarr; C</span><span class="wire"></span><span class="what"><span class="n">1</span><code>POST /orders { user, items }</code> &rarr; <code>ordersService.create(dto)</code></span></li>
+<li><span class="from">C &rarr; S</span><span class="wire"></span><span class="what"><span class="n">2</span>Enter <code>@Transactional()</code> method — plugin intercepts call</span></li>
+<li><span class="from">Plugin &rarr; Ad</span><span class="wire"></span><span class="what"><span class="n">3</span><code>adapter.connectionTokenTxProxy()</code> — adapter calls <code>prisma.$transaction(async (tx) =&gt; …)</code>, Prisma issues BEGIN</span></li>
+<li><span class="from">Adapter &rarr; CLS</span><span class="wire"></span><span class="what"><span class="n">4</span>Plugin stores <code>tx</code> in CLS namespace. <code>txHost.tx</code> now points at tx for this request only</span></li>
+<li><span class="from">S &rarr; UoW</span><span class="wire"></span><span class="what"><span class="n">5</span><code>uow.users.create()</code> &rarr; repo uses <code>this.txHost.tx.user.create()</code></span></li>
+<li><span class="from">S &rarr; UoW</span><span class="wire"></span><span class="what"><span class="n">6</span><code>uow.orders.create()</code> &rarr; same <code>tx</code>, second statement in tx</span></li>
+<li><span class="from">S &rarr; UoW</span><span class="wire"></span><span class="what"><span class="n">7</span><code>uow.payments.charge()</code> &rarr; same <code>tx</code>, third statement</span></li>
+<li><span class="from">Adapter &rarr; DB</span><span class="wire"></span><span class="what"><span class="n">8</span>Method resolves &rarr; COMMIT. Any throw &rarr; ROLLBACK, CLS entry cleared</span></li>
+</ol>
+</div>
+<div class="alt"><div class="alt-h">Alt — outcome</div><div class="alt-b">Success: COMMIT &rarr; controller returns <code>201 Created</code>. Error at 5/6/7: ROLLBACK &rarr; no partial rows &rarr; exception filter maps to <code>500 / 4xx</code>.</div></div>
+<div class="callout"><strong>Wire key —</strong> the rust lifeline is <code class="inline">txHost.tx</code>. Steps 4–8 all hang off it. Nested <code class="inline">@Transactional()</code> joins the same wire by default (Propagation.Required).</div>
+</section>
+
+<section id="flow">
+<div class="sec-label">03 — Request lifecycle</div>
+<h2>Request &rarr; plugin &rarr; CLS &rarr; txHost &rarr; Prisma</h2>
+<ol class="rows">
+<li><span class="num">1</span><div class="row-body"><strong>Request &rarr; Controller (thin)</strong><div class="t"><code class="inline">POST /orders</code> calls the service. No decorator here — the transaction boundary lives on the service method so it covers all writes.</div></div></li>
+<li><span class="num">2</span><div class="row-body"><strong>@Transactional() &rarr; ClsPluginTransactional</strong><div class="t">Plugin wraps the method. Checks CLS: tx already active? Join it. Otherwise ask the adapter to start one.</div></div></li>
+<li><span class="num">3</span><div class="row-body"><strong>Adapter &rarr; prisma.$transaction</strong><div class="t"><code class="inline">TransactionalAdapterPrisma</code> calls <code class="inline">$transaction(async (tx) =&gt; …)</code> with your timeout / isolation options. Holds the real BEGIN/COMMIT/ROLLBACK.</div></div></li>
+<li><span class="num">4</span><div class="row-body"><strong>CLS stores tx, txHost exposes it</strong><div class="t">Plugin puts <code class="inline">tx</code> in CLS. <code class="inline">txHost.tx</code> returns it; <code class="inline">txHost.isTransactionActive()</code> is true. Every async child of the request sees it.</div></div></li>
+<li><span class="num">5</span><div class="row-body"><strong>UoW + repos &rarr; txHost.tx</strong><div class="t">Repositories call <code class="inline">this.txHost.tx.user.create()</code>. Outside a transaction the same line uses the plain client — no branching needed.</div></div></li>
+<li><span class="num">6</span><div class="row-body"><strong>Commit / rollback</strong><div class="t">Resolve &rarr; adapter COMMITs. Throw &rarr; adapter ROLLBACKs and rethrows. CLS slot is cleared so the next request starts clean.</div></div></li>
+</ol>
+</section>
+
+<section id="setup">
+<div class="sec-label">04 — Install + plugin setup</div>
+<h2>Wire the adapter once at the root</h2>
+<pre class="code"><code>// install
+// npm i @nestjs-cls/transactional @nestjs-cls/transactional-adapter-prisma
+// (v2 and earlier: adapter ships inside @nestjs-cls/transactional)
+
+// prisma.module.ts — exposes PrismaService for the adapter
+import { Global, Module } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
+
+@Global()
+@Module({ providers: [PrismaService], exports: [PrismaService] })
+export class PrismaModule {}
+
+// app.module.ts
+import { Module } from '@nestjs/common';
+import { ClsModule } from 'nestjs-cls';
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+
+@Module({
+  imports: [
+    PrismaModule,
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true }, // one CLS context per request
+      plugins: [
+        new ClsPluginTransactional({
+          imports: [PrismaModule],
+          adapter: new TransactionalAdapterPrisma({
+            prismaInjectionToken: PrismaService,
+            // txOptions: { timeout: 10000, maxWait: 5000 },
+          }),
+        }),
+      ],
+    }),
+  ],
+})
+export class AppModule {}</code></pre>
+<p class="note">The adapter needs the same <code class="inline">PrismaService</code> instance your app uses — hence <code class="inline">prismaInjectionToken</code> + listing <code class="inline">PrismaModule</code> in <code class="inline">imports</code>.</p>
+</section>
+
+<section id="adapter">
+<div class="sec-label">05 — Adapter deep-dive</div>
+<h2>What TransactionalAdapterPrisma actually does</h2>
+<div class="group-label">Responsibilities</div>
+<ul class="ruled">
+<li class="dir">Lifecycle — owns start / commit / rollback via prisma.$transaction callback form</li>
+<li>connectionTokenTxProxy — maps TransactionHost.tx to tx-client-inside / plain-client-outside</li>
+<li>isTransactionActive — reports whether CLS currently holds a tx for this request</li>
+<li>options passthrough — timeout, maxWait, isolationLevel forwarded to $transaction</li>
+<li>propagation — Required joins existing tx; RequiresNew suspends it and opens a fresh one</li>
+</ul>
+<div class="callout"><strong>No custom keys —</strong> you never call <code class="inline">cls.get('TX_CLIENT')</code> yourself. The adapter owns the CLS key internally; <code class="inline">txHost.tx</code> is the only read path.</div>
+</section>
+
+<section id="uow">
+<div class="sec-label">06 — Unit of Work</div>
+<h2>Thin wrapper around TransactionHost</h2>
+<p>UoW keeps service code expressive (<code class="inline">uow.users / uow.orders</code>) while every repo shares the adapter's tx.</p>
+<pre class="code"><code>// common/transaction/unit-of-work.service.ts
+import { Injectable } from '@nestjs/common';
+import { UserRepository } from '../../modules/users/user.repository';
+import { OrderRepository } from '../../modules/orders/order.repository';
+import { PaymentRepository } from '../../modules/payments/payment.repository';
+
+@Injectable()
+export class UnitOfWork {
+  constructor(
+    public users: UserRepository,
+    public orders: OrderRepository,
+    public payments: PaymentRepository,
+  ) {}
+}
+
+// orders.service.ts — the transaction boundary
+import { Injectable } from '@nestjs/common';
+import { Transactional } from '@nestjs-cls/transactional';
+
+@Injectable()
+export class OrdersService {
+  constructor(private uow: UnitOfWork) {}
+
+  @Transactional() // plugin + adapter open the tx here
+  async create(dto: CreateOrderDto) {
+    const user = await this.uow.users.create(dto.user);
+    const order = await this.uow.orders.create({ ...dto, userId: user.id });
+    await this.uow.payments.charge(order.id, dto.amount);
+    return order;
+  }
+}
+
+// orders.controller.ts — stays thin, no decorator needed
+import { Body, Controller, Post } from '@nestjs/common';
+
+@Controller('orders')
+export class OrdersController {
+  constructor(private orders: OrdersService) {}
+  @Post()
+  create(@Body() dto: CreateOrderDto) {
+    return this.orders.create(dto);
+  }
+}</code></pre>
+</section>
+
+<section id="tx">
+<div class="sec-label">07 — @Transactional()</div>
+<h2>Options you will actually use</h2>
+<pre class="code"><code>import { Propagation, Transactional } from '@nestjs-cls/transactional';
+
+// default: join existing tx, else open one
+@Transactional()
+create(dto: CreateOrderDto) { /* ... */ }
+
+// pass Prisma tx options through the adapter
+@Transactional({ timeout: 10000, maxWait: 5000, isolationLevel: 'ReadCommitted' })
+importBulk(dto: BulkDto) { /* ... */ }
+
+// open a fresh tx even inside one (audit log that must persist)
+@Transactional({ propagation: Propagation.RequiresNew })
+audit(entry: AuditDto) { /* ... */ }
+
+// read-only intent: still joins, signals no writes expected
+// (adapter does not enforce it — keep the method write-free by convention)
+@Transactional({ propagation: Propagation.Required })
+getWithLock(id: string) { /* ... */ }</code></pre>
+<table class="rules">
+<tr><th>Case</th><th>Decorator</th></tr>
+<tr><td>Standard use-case (join or open)</td><td>@Transactional()</td></tr>
+<tr><td>Long import, avoid Prisma timeout</td><td>@Transactional({ timeout, maxWait })</td></tr>
+<tr><td>Must commit even if outer rolls back</td><td>@Transactional({ propagation: RequiresNew })</td></tr>
+<tr><td>Programmatic check in code</td><td>txHost.isTransactionActive()</td></tr>
+</table>
+</section>
+
+<section id="repo">
+<div class="sec-label">08 — Repository</div>
+<h2>Only layer that touches the tx client</h2>
+<pre class="code"><code>// modules/users/user.repository.ts
+import { Injectable } from '@nestjs/common';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+
+@Injectable()
+export class UserRepository {
+  constructor(
+    private txHost: TransactionHost&lt;TransactionalAdapterPrisma&gt;,
+  ) {}
+
+  // inside @Transactional(): the tx client. Outside: the plain client.
+  private get db() {
+    return this.txHost.tx;
+  }
+
+  create(data: any) {
+    return this.db.user.create({ data });
+  }
+  findById(id: string) {
+    return this.db.user.findUnique({ where: { id } });
+  }
+}</code></pre>
+<div class="group-label">Layer contract</div>
+<table class="rules">
+<tr><th>Layer</th><th>Uses what?</th><th>Notes</th></tr>
+<tr><td>Controller</td><td>Service only</td><td>No decorator, no Prisma</td></tr>
+<tr><td>Service / use-case</td><td>UoW + @Transactional()</td><td>Owns the boundary</td></tr>
+<tr><td>Repository</td><td>txHost.tx only</td><td>Never PrismaService</td></tr>
+<tr><td>Adapter + plugin</td><td>prisma.$transaction + CLS</td><td>Wired once in AppModule</td></tr>
+</table>
+</section>
+
+<section id="structure">
+<div class="sec-label">09 — Folder structure</div>
+<h2>Less code than the hand-rolled version</h2>
+<div class="group-label">src / common</div>
+<ul class="ruled">
+<li class="dir">common / prisma — client + module (consumed by the adapter)</li>
+<li>common/prisma/prisma.service.ts</li>
+<li>common/prisma/prisma.module.ts</li>
+<li class="dir">common / transaction — only UoW lives here now</li>
+<li>common/transaction/unit-of-work.service.ts</li>
+</ul>
+<div class="group-label">src / modules</div>
+<ul class="ruled">
+<li class="dir">modules / users, orders, payments — repository per aggregate via txHost</li>
+<li>modules/users/user.repository.ts</li>
+<li>modules/orders/orders.controller.ts + orders.service.ts + order.repository.ts</li>
+<li>modules/payments/payment.repository.ts</li>
+<li>app.module.ts — ClsModule + ClsPluginTransactional + TransactionalAdapterPrisma</li>
+</ul>
+<p class="note">Deleted vs hand-rolled: no <code class="inline">transaction-manager.service.ts</code>, no <code class="inline">transaction.interceptor.ts</code>, no <code class="inline">transactional.decorator.ts</code>, no <code class="inline">TX_CLIENT_KEY</code>. The plugin + adapter own all of it.</p>
+</section>
+
+<section id="mistakes">
+<div class="sec-label">10 — Mistakes &amp; practices</div>
+<h2>Adapter-specific pitfalls</h2>
+<table class="rules">
+<tr><th>Mistake</th><th>Fix</th></tr>
+<tr><td>Injecting PrismaService in a service/repo</td><td>Inject TransactionHost; use txHost.tx (bypassing it silently leaves the tx)</td></tr>
+<tr><td>@Transactional() on controller AND service</td><td>Put it on the service method only; nesting joins anyway but one boundary is clearer</td></tr>
+<tr><td>Array-form $transaction thinking</td><td>Adapter uses callback form; dependent writes just await sequentially on txHost.tx</td></tr>
+<tr><td>External API / Kafka inside tx</td><td>Side-effects after commit (outbox pattern); txHost.isTransactionActive() to guard</td></tr>
+<tr><td>Default 5s Prisma timeout on bulk work</td><td>@Transactional({ timeout: 10000, maxWait: 5000 })</td></tr>
+<tr><td>Forgetting PrismaModule in plugin imports</td><td>Both root imports and plugin imports must list PrismaModule</td></tr>
+</table>
+<div class="group-label">Atomicity check</div>
+<div class="seq">
+<div class="seq-actors">
+<div>Service</div>
+<div>DB</div>
+</div>
+<ol class="seq-steps">
+<li><span class="from">S &rarr; DB</span><span class="wire"></span><span class="what"><span class="n">1</span>BEGIN (adapter opens $transaction)</span></li>
+<li><span class="from">S &rarr; DB</span><span class="wire"></span><span class="what"><span class="n">2</span><code>txHost.tx.user.create()</code></span></li>
+<li><span class="from">S &rarr; DB</span><span class="wire"></span><span class="what"><span class="n">3</span><code>txHost.tx.order.create()</code></span></li>
+<li><span class="from">S &rarr; DB</span><span class="wire"></span><span class="what"><span class="n">4</span>Payment throws &rarr; adapter ROLLBACK (user + order undone)</span></li>
+</ol>
+</div>
+<div class="callout"><strong>Best practices —</strong> one transaction per use-case on the service; repos via <code class="inline">txHost.tx</code>; keep transactions short; assert rollback with an integration test (create → force throw → count rows = 0).</div>
+</section>
+
+<footer>Warm-paper edition &middot; inline CSS only, no scripts &middot; prints identically offline &middot; nestjs-cls Prisma adapter flow</footer>
+
+</div>
+</body>
+</html>
